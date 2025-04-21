@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'register.dart'; // Mengimpor halaman register
-import 'loginAdmin.dart';
-class LoginScreen extends StatefulWidget { // Ubah nama menjadi LoginScreen untuk menghindari konflik
-  const LoginScreen({super.key});
+import 'login.dart'; // Halaman login untuk user
+
+class LoginAdminScreen extends StatefulWidget {
+  const LoginAdminScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _LoginAdminScreenState createState() => _LoginAdminScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginAdminScreenState extends State<LoginAdminScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final QuerySnapshot result = await _firestore
-          .collection('users')
+          .collection('admin')
           .where('username', isEqualTo: username)
           .where('password', isEqualTo: password)
           .get();
@@ -36,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login successful! Welcome back!')),
         );
-        // TODO: Navigate to home/dashboard
+        // TODO: Navigate to admin dashboard
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Oops! Username atau password salah, coba lagi ya :)')),
@@ -51,27 +51,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void navigateToForgotPassword() {
-    // TODO: Navigasi ke halaman forgot password
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Navigate to Forgot Password screen')),
     );
-    // Uncomment dan sesuaikan saat halaman ForgotPasswordScreen sudah dibuat
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-    // );
+    // TODO: Tambahkan navigasi ketika halaman ForgotPasswordScreen tersedia
   }
 
-  void navigateToRegister() {
+  void navigateToUserLogin() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RegisterScreen()), // Pastikan ini class dari register.dart
-    );
-  }
-  void navigateToAdmin() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginAdminScreen()), // Pastikan ini class dari register.dart
+      MaterialPageRoute(builder: (context) => const LoginScreen()), // Kembali ke login.dart
     );
   }
 
@@ -89,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Image.asset('assets/images/logo.png', height: 60),
             const SizedBox(height: 20),
             const Text(
-              'Welcome!',
+              'Hello, Admin!',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -97,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const Text(
-              'Sign In to your account',
+              'Admin Login',
               style: TextStyle(fontSize: 14, color: Color(0xFF364822)),
             ),
             const SizedBox(height: 20),
@@ -105,8 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 10),
             _buildTextField(Icons.lock, 'Enter your password', controller: _passwordController, isPassword: true),
             const SizedBox(height: 10),
-
-            // Forgot Password - Dibuat agar bisa diklik
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -123,8 +110,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Tombol Sign In
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -143,36 +128,18 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Sign Up - Diperbaiki agar menggunakan TextButton
+            // Tombol "Back to User"
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: navigateToRegister,
+                onPressed: navigateToUserLogin,
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(0, 30),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: const Text(
-                  'Or Sign Up',
-                  style: TextStyle(
-                    color: Color(0xFF364822),
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: navigateToAdmin,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 30),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text(
-                  'login as admin',
+                  'Back to User',
                   style: TextStyle(
                     color: Color(0xFF364822),
                     fontSize: 14,

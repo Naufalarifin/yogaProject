@@ -1,23 +1,5 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Poppins'),
-      home: const RegisterScreen(),
-    );
-  }
-}
-
-// Ubah menjadi StatefulWidget
+import 'signup.dart';
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -27,7 +9,19 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  bool isChecked = false; // Deklarasi variabel isChecked
+  bool isChecked = false;
+  
+  // Tambahkan controller untuk username dan email
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  
+  @override
+  void dispose() {
+    // Bersihkan controller saat widget dihapus
+    usernameController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +48,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               style: TextStyle(fontSize: 14, color: Color(0xFF364822)),
             ),
             const SizedBox(height: 20),
-            _buildTextField(Icons.person, 'Enter username'),
+            _buildTextField(Icons.person, 'Enter username', controller: usernameController),
             const SizedBox(height: 10),
-            _buildTextField(Icons.email, 'Enter your email'),
+            _buildTextField(Icons.email, 'Enter your email', controller: emailController),
             const SizedBox(height: 10),
 
             // Checkbox dengan setState()
@@ -83,13 +77,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed:
-                    isChecked ? () {} : null, // Disabled jika tidak dicentang
+                onPressed: isChecked ? _navigateToSignUpScreen : null, // Navigasi ke SignUpScreen
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
-                      isChecked
-                          ? const Color(0xFF99B080)
-                          : Colors.grey[400], // Warna berubah sesuai checkbox
+                      isChecked ? const Color(0xFF99B080) : Colors.grey[400],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
@@ -106,20 +97,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  // Fungsi untuk navigasi ke SignUpScreen dengan data username dan email
+  void _navigateToSignUpScreen() {
+    if (usernameController.text.isEmpty || emailController.text.isEmpty) {
+      // Validasi input
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter both username and email')),
+      );
+      return;
+    }
+
+    // Validasi format email sederhana
+    if (!emailController.text.contains('@') || !emailController.text.contains('.')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SignUpScreen(
+          username: usernameController.text,
+          email: emailController.text,
+        ),
+      ),
+    );
+  }
+
   Widget _buildTextField(
     IconData icon,
     String hintText, {
     bool isPassword = false,
+    required TextEditingController controller,
   }) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: InputDecoration(
         filled: true,
-        // ignore: deprecated_member_use
-        fillColor: const Color(
-          0xff99b080,
-        // ignore: deprecated_member_use
-        ).withOpacity(0.1), // Warna dengan 10% opacity
+        fillColor: const Color(0xff99b080).withOpacity(0.1),
         prefixIcon: Container(
           margin: const EdgeInsets.all(8.0),
           decoration: const BoxDecoration(
