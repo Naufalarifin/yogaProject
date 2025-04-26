@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'register.dart'; // Mengimpor halaman register
+import 'register.dart';
 import 'loginAdmin.dart';
-class LoginScreen extends StatefulWidget { // Ubah nama menjadi LoginScreen untuk menghindari konflik
+import 'dashboard.dart';
+import 'session_manager.dart'; // Pastikan path sesuai struktur folder Anda
+
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
@@ -15,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> signIn() async {
+  try {
     final String username = _usernameController.text.trim();
     final String password = _passwordController.text.trim();
 
@@ -25,58 +29,88 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    try {
-      final QuerySnapshot result = await _firestore
-          .collection('users')
-          .where('username', isEqualTo: username)
-          .where('password', isEqualTo: password)
-          .get();
+    print("Querying Firestore for user: $username");
+    final QuerySnapshot result = await _firestore
+        .collection('users')
+        .where('username', isEqualTo: username)
+        .where('password', isEqualTo: password)
+        .get();
 
-      if (result.docs.isNotEmpty) {
+    print("Query result docs: ${result.docs.length}");
+    if (result.docs.isNotEmpty) {
+      // Ambil data user dari dokumen Firestore
+      final Map<String, dynamic> userData = result.docs.first.data() as Map<String, dynamic>;
+      final String userId = result.docs.first.id;
+      
+      print("User found: $username, ID: $userId");
+      print("User data: $userData");
+      
+      // Simpan sesi login dengan try-catch
+      try {
+        print("Saving login session...");
+        await SessionManager.saveLoginSession(userId, userData);
+        print("Session saved successfully");
+      } catch (e) {
+        print("Error saving session: $e");
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful! Welcome back!')),
-        );
-        // TODO: Navigate to home/dashboard
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Oops! Username atau password salah, coba lagi ya :)')),
+          SnackBar(content: Text('Login successful but failed to save session: $e')),
         );
       }
-    } catch (e) {
-      print('Error during sign in: $e');
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Something went wrong. Please try again later.')),
+        const SnackBar(content: Text('Login successful! Welcome back!')),
+      );
+      
+      print("Navigating to dashboard");
+      // Navigasi ke dashboard dengan membawa data user
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DashboardPage(
+            userData: userData,
+            userId: userId,
+          ),
+        ),
+      );
+    } else {
+      print("No user found with username: $username and provided password");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Oops! Username atau password salah, coba lagi ya :)')),
       );
     }
+  } catch (e) {
+    print("Error during sign in: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Something went wrong: $e')),
+    );
   }
+}
 
+  // Metode lainnya seperti di kode asli
   void navigateToForgotPassword() {
     // TODO: Navigasi ke halaman forgot password
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Navigate to Forgot Password screen')),
     );
-    // Uncomment dan sesuaikan saat halaman ForgotPasswordScreen sudah dibuat
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-    // );
   }
 
   void navigateToRegister() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const RegisterScreen()), // Pastikan ini class dari register.dart
+      MaterialPageRoute(builder: (context) => const RegisterScreen()),
     );
   }
+  
   void navigateToAdmin() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const LoginAdminScreen()), // Pastikan ini class dari register.dart
+      MaterialPageRoute(builder: (context) => const LoginAdminScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Kode build UI login seperti di kode asli
     return Scaffold(
       backgroundColor: const Color(0xFFFCF9F3),
       body: Padding(
@@ -105,8 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 10),
             _buildTextField(Icons.lock, 'Enter your password', controller: _passwordController, isPassword: true),
             const SizedBox(height: 10),
-
-            // Forgot Password - Dibuat agar bisa diklik
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -123,8 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Tombol Sign In
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -142,8 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Sign Up - Diperbaiki agar menggunakan TextButton
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
