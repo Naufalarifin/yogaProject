@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart'; // Halaman login untuk user
+import 'loading_loginAdmin.dart'; // Halaman loading untuk admin
 
 class LoginAdminScreen extends StatefulWidget {
   const LoginAdminScreen({super.key});
@@ -33,10 +34,24 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
           .get();
 
       if (result.docs.isNotEmpty) {
+        // Dapatkan data admin dari dokumen
+        final adminData = result.docs.first.data() as Map<String, dynamic>;
+        final adminId = result.docs.first.id;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login successful! Welcome back!')),
         );
-        // TODO: Navigate to admin dashboard
+        
+        // Navigasi ke halaman loading dengan membawa data admin
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LoadingLoginAdmin(
+              adminData: adminData,
+              adminId: adminId,
+            ),
+          ),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Oops! Username atau password salah, coba lagi ya :)')),

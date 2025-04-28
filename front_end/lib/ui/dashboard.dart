@@ -110,6 +110,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final String username = widget.userData != null ? widget.userData!['username'] ?? 'Guest' : 'Guest';
     
     return Scaffold(
+      backgroundColor: const Color(0xFFFCF9F3), // Mengubah background color di sini
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
