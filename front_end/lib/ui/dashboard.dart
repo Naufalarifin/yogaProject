@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'session_manager.dart'; // Pastikan path sesuai struktur folder Anda
-import 'login.dart'; // Import login screen untuk logout
+import 'session_manager.dart'; 
+import 'login.dart';
+import 'account.dart';
+import 'instructor.dart';
 
 class DashboardPage extends StatefulWidget {
   final Map<String, dynamic>? userData;
@@ -57,7 +59,8 @@ class _DashboardPageState extends State<DashboardPage> {
             'id': doc.id,
             'name': data['name'] ?? 'Unknown',
             'imageUrl': data['imageUrl'] ?? '',
-            ...data, // Menyertakan semua field lainnya
+            'description': data['description'] ?? '',
+            ...data, 
           });
         }
         
@@ -88,11 +91,10 @@ class _DashboardPageState extends State<DashboardPage> {
       
       if (!mounted) return;
       
-      // Navigasi ke login screen
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false, // Menghapus semua halaman dari stack
+        (route) => false,
       );
     } catch (e) {
       print('Error logging out: $e');
@@ -238,21 +240,31 @@ class _DashboardPageState extends State<DashboardPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: displayedInstructors.map((instructor) {
-        final String name = instructor['name'] ?? 'Unknown';
-        final String imageUrl = instructor['imageUrl'] ?? '';
-        
-        return _buildInstructorItemFromUrl(name, imageUrl);
+        return _buildInstructorItemFromUrl(instructor);
       }).toList(),
     );
   }
 
   // Widget untuk menampilkan instruktur dengan gambar dari URL
-  Widget _buildInstructorItemFromUrl(String name, String imageUrl) {
+  Widget _buildInstructorItemFromUrl(Map<String, dynamic> instructor) {
+    final String name = instructor['name'] ?? 'Unknown';
+    final String imageUrl = instructor['imageUrl'] ?? '';
+    
     return Column(
       children: [
         GestureDetector(
           onTap: () {
             // Navigate to instructor profile
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => InstructorPage(
+                  instructorData: instructor,
+                  userData: widget.userData,
+                  userId: widget.userId,
+                ),
+              ),
+            );
           },
           child: Container(
             width: 80,
@@ -416,10 +428,16 @@ class _DashboardPageState extends State<DashboardPage> {
             _buildNavBarItem('Mini Class', Icons.self_improvement, false),
             _buildNavBarItem('Yoga Class', Icons.accessibility_new, false),
             _buildNavBarItem('Account', Icons.person, false, onTap: () {
-              // Menampilkan informasi akun pengguna jika tersedia
-              if (widget.userData != null) {
-                _showUserProfile(context);
-              }
+              // Navigate to account page instead of showing profile dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AccountPage(
+                    userData: widget.userData,
+                    userId: widget.userId,
+                  ),
+                ),
+              );
             }),
           ],
         ),
@@ -452,93 +470,6 @@ class _DashboardPageState extends State<DashboardPage> {
               fontSize: 12,
             ),
           ),
-        ],
-      ),
-    );
-  }
-  
-  // Method untuk menampilkan dialog profil pengguna sesuai data Firestore
-  void _showUserProfile(BuildContext context) {
-    if (widget.userData == null) return;
-    
-    // Format tanggal createdAt jika ada
-    String formattedDate = 'N/A';
-    if (widget.userData!.containsKey('createdAt')) {
-      // Jika createdAt adalah Timestamp dari Firestore
-      if (widget.userData!['createdAt'] is Timestamp) {
-        final timestamp = widget.userData!['createdAt'] as Timestamp;
-        final dateTime = timestamp.toDate();
-        // Format tanggal sesuai kebutuhan
-        formattedDate = '${dateTime.day}/${dateTime.month}/${dateTime.year}';
-      } else {
-        // Jika bukan Timestamp, tampilkan sebagai string
-        formattedDate = widget.userData!['createdAt'].toString();
-      }
-    }
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'User Profile',
-          style: TextStyle(
-            color: Color(0xFF2C5530),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildProfileItem('Username', widget.userData!['username'] ?? 'N/A'),
-              _buildProfileItem('Email', widget.userData!['email'] ?? 'N/A'),
-              _buildProfileItem('Registered', formattedDate),
-              // Tidak menampilkan password untuk keamanan
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Close',
-              style: TextStyle(color: Color(0xFF2C5530)),
-            ),
-          ),
-          // Tambahkan tombol logout di dalam dialog profil
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Tutup dialog
-              _logout(); // Panggil fungsi logout
-            },
-            child: const Text(
-              'Logout',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // Widget untuk menampilkan item profil
-  Widget _buildProfileItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2C5530),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(value),
-          const Divider(),
         ],
       ),
     );

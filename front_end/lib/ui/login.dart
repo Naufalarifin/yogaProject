@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register.dart';
 import 'loginAdmin.dart';
 import 'dashboard.dart';
-import 'session_manager.dart'; // Pastikan path sesuai struktur folder Anda
+import 'session_manager.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -62,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       
       print("Navigating to dashboard");
-      // Navigasi ke dashboard dengan membawa data user
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -86,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-  // Metode lainnya seperti di kode asli
   void navigateToForgotPassword() {
     // TODO: Navigasi ke halaman forgot password
     ScaffoldMessenger.of(context).showSnackBar(
