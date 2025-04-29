@@ -1,32 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:async';
+import 'dashboard.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const LoadingSignUpScreen(),
-    );
-  }
-}
-
-class LoadingSignUpScreen extends StatefulWidget {
-  const LoadingSignUpScreen({super.key});
+class LoadingLoginScreen extends StatefulWidget {
+  final Map<String, dynamic>? userData;
+  final String? userId;
+  
+  const LoadingLoginScreen({
+    super.key, 
+    this.userData,
+    this.userId,
+  });
 
   @override
-  _LoadingSignUpScreen createState() => _LoadingSignUpScreen();
+  State<LoadingLoginScreen> createState() => _LoadingLoginScreenState();
 }
 
-class _LoadingSignUpScreen extends State<LoadingSignUpScreen> {
+class _LoadingLoginScreenState extends State<LoadingLoginScreen> {
   late VideoPlayerController _controller;
-
+  
   @override
   void initState() {
     super.initState();
@@ -36,6 +29,22 @@ class _LoadingSignUpScreen extends State<LoadingSignUpScreen> {
       })
       ..setLooping(true)
       ..play();
+    
+    // Simulate loading process with a delay
+    Timer(const Duration(seconds: 3), () {
+      // Navigate to dashboard after loading completes
+      if (!mounted) return;
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DashboardPage(
+            userData: widget.userData,
+            userId: widget.userId,
+          ),
+        ),
+      );
+    });
   }
 
   @override
@@ -46,6 +55,11 @@ class _LoadingSignUpScreen extends State<LoadingSignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get username from userData if available
+    final String username = widget.userData != null 
+        ? widget.userData!['username'] ?? 'User' 
+        : 'User';
+    
     return Scaffold(
       backgroundColor: const Color(0xFFFCF9F3),
       body: Center(
@@ -58,15 +72,15 @@ class _LoadingSignUpScreen extends State<LoadingSignUpScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF364822),
+                color: Color(0xFF2C5530),
               ),
             ),
             const SizedBox(height: 5),
-            const Text(
-              'Signing in to your account',
-              style: TextStyle(
+            Text(
+              'Signing in as $username',
+              style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF364822),
+                color: Color(0xFF2C5530),
               ),
             ),
             const SizedBox(height: 40),
@@ -76,13 +90,15 @@ class _LoadingSignUpScreen extends State<LoadingSignUpScreen> {
                     width: 60,
                     child: VideoPlayer(_controller),
                   )
-                : const CircularProgressIndicator(),
+                : const CircularProgressIndicator(
+                    color: Color(0xFF2C5530),
+                  ),
             const SizedBox(height: 10),
             const Text(
               'Loading...',
               style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF364822),
+                color: Color(0xFF2C5530),
               ),
             ),
           ],

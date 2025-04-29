@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'register.dart';
 import 'loginAdmin.dart';
-import 'dashboard.dart';
+import 'loading_login.dart';
 import 'session_manager.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -65,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => DashboardPage(
+          builder: (context) => LoadingLoginScreen(
             userData: userData,
             userId: userId,
           ),
