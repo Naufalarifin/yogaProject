@@ -5,6 +5,7 @@ import 'session_manager.dart';
 import 'login.dart';
 import 'account.dart';
 import 'instructor.dart';
+import 'booking_class.dart'; // Import the new booking class page
 
 class DashboardPage extends StatefulWidget {
   final Map<String, dynamic>? userData;
@@ -104,6 +105,19 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  // Metode untuk navigasi ke halaman booking class
+  void _navigateToBookingClass() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookingClassPage(
+          userData: widget.userData,
+          userId: widget.userId,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Mengambil username dari userData, jika tidak ada gunakan 'Guest'
@@ -197,7 +211,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 _buildDayButton('Tuesday'),
                 const SizedBox(height: 10),
                 _buildDayButton('Thursday'),
-                _buildSeeAllRow('See all'),
+                // Updated See All button for Yoga class everyday to navigate to booking_class.dart
+                _buildSeeAllRow('See all', onTap: _navigateToBookingClass),
                 const SizedBox(height: 25),
                 _buildSectionHeader('Instructor'),
                 const SizedBox(height: 15),
@@ -255,7 +270,7 @@ class _DashboardPageState extends State<DashboardPage> {
       children: [
         GestureDetector(
           onTap: () {
-            // Navigate to instructor profile
+            // Navigate to instructor profile - ensure passing user data here too
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -356,15 +371,15 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildSeeAllRow(String text) {
+  Widget _buildSeeAllRow(String text, {VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           GestureDetector(
-            onTap: () {
-              // Navigate to see all
+            onTap: onTap ?? () {
+              // Default navigation handler if no specific onTap provided
             },
             child: Row(
               children: [
@@ -389,20 +404,23 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildDayButton(String day) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFA3BE8C),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          day,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF2C5530),
+    return GestureDetector(
+      onTap: _navigateToBookingClass, // Add navigation to each day button
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFA3BE8C),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Text(
+            day,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF2C5530),
+            ),
           ),
         ),
       ),
@@ -427,9 +445,10 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             _buildNavBarItem('Home', Icons.home, true),
             _buildNavBarItem('Mini Class', Icons.self_improvement, false),
-            _buildNavBarItem('Yoga Class', Icons.accessibility_new, false),
+            // Updated Yoga Class navigation button to go to booking_class.dart
+            _buildNavBarItem('Yoga Class', Icons.accessibility_new, false, onTap: _navigateToBookingClass),
             _buildNavBarItem('Account', Icons.person, false, onTap: () {
-              // Navigate to account page instead of showing profile dialog
+              // Navigate to account page with user data
               Navigator.push(
                 context,
                 MaterialPageRoute(
