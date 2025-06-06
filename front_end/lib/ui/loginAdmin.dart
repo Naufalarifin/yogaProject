@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login.dart'; // Halaman login untuk user
-import 'loading_loginAdmin.dart'; // Halaman loading untuk admin
+import 'login.dart';
+import 'loading_loginAdmin.dart';
+import 'session_manager.dart'; // Import SessionManager
 
 class LoginAdminScreen extends StatefulWidget {
   const LoginAdminScreen({super.key});
@@ -34,24 +35,27 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
           .get();
 
       if (result.docs.isNotEmpty) {
-        // Dapatkan data admin dari dokumen
         final adminData = result.docs.first.data() as Map<String, dynamic>;
         final adminId = result.docs.first.id;
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful! Welcome back!')),
-        );
+        // Save admin session using SessionManager
+        await SessionManager.saveAdminSession(adminId, adminData);
         
-        // Navigasi ke halaman loading dengan membawa data admin
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => LoadingLoginAdmin(
-              adminData: adminData,
-              adminId: adminId,
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Login successful! Welcome back!')),
+          );
+          
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LoadingLoginAdmin(
+                adminData: adminData,
+                adminId: adminId,
+              ),
             ),
-          ),
-        );
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Oops! Username atau password salah, coba lagi ya :)')),
@@ -69,13 +73,12 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Navigate to Forgot Password screen')),
     );
-    // TODO: Tambahkan navigasi ketika halaman ForgotPasswordScreen tersedia
   }
 
   void navigateToUserLogin() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()), // Kembali ke login.dart
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
@@ -142,8 +145,6 @@ class _LoginAdminScreenState extends State<LoginAdminScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Tombol "Back to User"
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(

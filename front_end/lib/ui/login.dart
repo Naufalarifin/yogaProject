@@ -85,13 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-  void navigateToForgotPassword() {
-    // TODO: Navigasi ke halaman forgot password
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigate to Forgot Password screen')),
-    );
-  }
-
   void navigateToRegister() {
     Navigator.push(
       context,
@@ -137,21 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 10),
             _buildTextField(Icons.lock, 'Enter your password', controller: _passwordController, isPassword: true),
             const SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: navigateToForgotPassword,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 30),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(color: Color(0xFF364822), fontSize: 14),
-                ),
-              ),
-            ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,

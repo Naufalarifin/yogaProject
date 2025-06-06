@@ -3,6 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'session_manager.dart';
 import 'login.dart';
 import 'dashboard.dart';
+import 'booking_class.dart';
+import 'package:front_end/ui/miniClassPage.dart';
+import 'booked_classes_page.dart';
+import 'miniYogaProgressPage.dart';
 
 class AccountPage extends StatefulWidget {
   final Map<String, dynamic>? userData;
@@ -44,24 +48,6 @@ class _AccountPageState extends State<AccountPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
-              // Search bar
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: 'What do you need?',
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
               
               // My Account Section
               const Text(
@@ -128,13 +114,6 @@ class _AccountPageState extends State<AccountPage> {
                 },
               ),
               _buildNavigationItem(
-                'Track yoga class', 
-                Icons.track_changes,
-                onTap: () {
-                  _navigateToTrackYogaClass();
-                },
-              ),
-              _buildNavigationItem(
                 'Mini yoga class progress', 
                 Icons.show_chart,
                 onTap: () {
@@ -181,10 +160,9 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  // Bottom navigation bar
+  // PERBAIKAN: Bottom navigation bar yang sesuai dengan dashboard page
   Widget _buildBottomNavBar(BuildContext context) {
     return Container(
-      height: 70,
       decoration: BoxDecoration(
         color: const Color(0xFFA3BE8C).withOpacity(0.4),
         border: Border(
@@ -194,54 +172,79 @@ class _AccountPageState extends State<AccountPage> {
           ),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavBarItem(
-            'Home', 
-            Icons.home, 
-            false,
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DashboardPage(
-                    userData: widget.userData,
-                    userId: widget.userId,
-                  ),
-                ),
-              );
-            },
+      child: SafeArea(
+        top: false,
+        child: Container(
+          // PERBAIKAN: Tinggi yang lebih kompak
+          height: 60, // Dari 70 menjadi 60
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16), // Kurangi padding vertical
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavBarItem(
+                'Home', 
+                Icons.home, 
+                false,
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DashboardPage(
+                        userData: widget.userData,
+                        userId: widget.userId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildNavBarItem(
+                'Mini Class', 
+                Icons.self_improvement, 
+                false,
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MiniClassPage(
+                        userData: widget.userData,
+                        userId: widget.userId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildNavBarItem(
+                'Yoga Class', 
+                Icons.accessibility_new, 
+                false,
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BookingClassPage(
+                        userData: widget.userData,
+                        userId: widget.userId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildNavBarItem(
+                'Account', 
+                Icons.person, 
+                true,
+                onTap: () {
+                  // Already on account page
+                },
+              ),
+            ],
           ),
-          _buildNavBarItem(
-            'Mini Class', 
-            Icons.self_improvement, 
-            false,
-            onTap: () {
-              _navigateToMiniClass();
-            },
-          ),
-          _buildNavBarItem(
-            'Yoga Class', 
-            Icons.accessibility_new, 
-            false,
-            onTap: () {
-              _navigateToYogaClass();
-            },
-          ),
-          _buildNavBarItem(
-            'Account', 
-            Icons.person, 
-            true,
-            onTap: () {
-              // Already on account page
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
 
+  // PERBAIKAN: NavBar item yang sesuai dengan dashboard page
   Widget _buildNavBarItem(
     String label, 
     IconData icon, 
@@ -251,19 +254,20 @@ class _AccountPageState extends State<AccountPage> {
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             icon,
             color: isActive ? const Color(0xFF2C5530) : Colors.black54,
-            size: 24,
+            size: 22, // Ukuran yang lebih kecil
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2), // Kurangi spacing
           Text(
             label,
             style: TextStyle(
               color: isActive ? const Color(0xFF2C5530) : Colors.black54,
-              fontSize: 12,
+              fontSize: 11, // Ukuran font yang lebih kecil
             ),
           ),
         ],
@@ -273,43 +277,28 @@ class _AccountPageState extends State<AccountPage> {
 
   // Navigation methods
   void _navigateToBookedClasses() {
-    // Navigate to booked classes page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Booked Classes')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookedClassesPage(
+          userData: widget.userData,
+          userId: widget.userId,
+        ),
+      ),
     );
-    // TODO: Implement actual navigation when page is available
-  }
-
-  void _navigateToTrackYogaClass() {
-    // Navigate to track yoga class page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Track Yoga Class')),
-    );
-    // TODO: Implement actual navigation when page is available
   }
 
   void _navigateToMiniYogaProgress() {
     // Navigate to mini yoga progress page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Mini Yoga Class Progress')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MiniYogaProgressPage(
+          userData: widget.userData,
+          userId: widget.userId,
+        ),
+      ),
     );
-    // TODO: Implement actual navigation when page is available
-  }
-
-  void _navigateToMiniClass() {
-    // Navigate to mini class page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Mini Class')),
-    );
-    // TODO: Implement actual navigation when page is available
-  }
-
-  void _navigateToYogaClass() {
-    // Navigate to yoga class page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Yoga Class')),
-    );
-    // TODO: Implement actual navigation when page is available
   }
 
   // Show account details dialog

@@ -67,6 +67,32 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return true;
   }
 
+  // Function to get the next available userId
+  Future<int> _getNextUserId() async {
+    try {
+      // Query all users and order by userId in descending order to get the highest userId
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .orderBy('userId', descending: true)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        // If no users exist, start with userId 1
+        return 1;
+      } else {
+        // Get the highest userId and add 1
+        Map<String, dynamic> lastUser = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        int lastUserId = lastUser['userId'] ?? 0;
+        return lastUserId + 1;
+      }
+    } catch (e) {
+      print('Error getting next userId: $e');
+      // If there's an error, try to get a timestamp-based fallback
+      return DateTime.now().millisecondsSinceEpoch % 1000000; // Fallback to a unique number
+    }
+  }
+
   Future<void> _signUp() async {
     setState(() {
       passwordError = null;
@@ -85,30 +111,62 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
-      // NOTE: Belum di-hash! Jangan simpan password mentah di production
-      await FirebaseFirestore.instance.collection('users').add({
-        'username': widget.username,
-        'email': widget.email,
-        'password': passwordController.text, // ⚠️ PASSWORD BELUM DI-HASH!
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      // Get the next available userId
+      int nextUserId = await _getNextUserId();
+      
+      // Create user document with all required fields
+      Map<String, dynamic> userData = {
+        'userId': nextUserId, // Number type, auto-incremented
+        'username': widget.username, // String
+        'email': widget.email, // String
+        'password': passwordController.text, // ⚠️ PASSWORD BELUM DI-HASH! (String)
+        'level': 'beginner', // String, default level
+        'progressLevel': 0, // Number, starting from 0
+        'watchedVideos': [], // Array, empty initially
+        'createdAt': FieldValue.serverTimestamp(), // Timestamp
+        'lastUpdated': FieldValue.serverTimestamp(), // Timestamp
+      };
+
+      // Use the userId as the document ID for easier querying
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(nextUserId.toString())
+          .set(userData);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful!')),
+          SnackBar(
+            content: Text('Registration successful! User ID: $nextUserId'),
+            backgroundColor: Colors.green,
+          ),
         );
 
-        // TODO: Ganti ke navigasi halaman setelah registrasi
+        // TODO: Navigate to the next screen after successful registration
+        // You can pass the userData to the next screen if needed
         // Navigator.pushAndRemoveUntil(
         //   context,
-        //   MaterialPageRoute(builder: (context) => HomeScreen()),
+        //   MaterialPageRoute(
+        //     builder: (context) => HomeScreen(
+        //       userData: userData,
+        //       userId: nextUserId.toString(),
+        //     ),
+        //   ),
         //   (route) => false,
         // );
+        
+        // For now, just pop back to previous screen
+        Navigator.pop(context);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      print('Registration error: $e');
     } finally {
       if (mounted) {
         setState(() {

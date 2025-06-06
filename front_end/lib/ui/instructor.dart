@@ -167,9 +167,9 @@ class InstructorPage extends StatelessWidget {
     );
   }
 
+  // Bottom navigation bar yang responsive dan menyesuaikan bentuk HP
   Widget _buildBottomNavBar(BuildContext context) {
     return Container(
-      height: 70,
       decoration: BoxDecoration(
         color: const Color(0xFFA3BE8C).withOpacity(0.4),
         border: Border(
@@ -179,66 +179,77 @@ class InstructorPage extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavBarItem(
-            context,
-            'Home',
-            Icons.home,
-            false,
-            onTap: () {
-              Navigator.pushReplacement(
+      child: SafeArea(
+        top: false,
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.08, // Responsive height
+          padding: EdgeInsets.symmetric(
+            vertical: MediaQuery.of(context).size.height * 0.005,
+            horizontal: MediaQuery.of(context).size.width * 0.02,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavBarItem(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => DashboardPage(
-                    userData: userData,
-                    userId: userId,
-                  ),
-                ),
-              );
-            },
-          ),
-          _buildNavBarItem(
-            context,
-            'Mini Class',
-            Icons.self_improvement,
-            false,
-            onTap: () {
-              // Navigate to mini class page
-            },
-          ),
-          _buildNavBarItem(
-            context,
-            'Yoga Class',
-            Icons.accessibility_new,
-            false,
-            onTap: () {
-              // Navigate to yoga class page
-            },
-          ),
-          _buildNavBarItem(
-            context,
-            'Account',
-            Icons.person,
-            false,
-            onTap: () {
-              Navigator.push(
+                'Home',
+                Icons.home,
+                false,
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DashboardPage(
+                        userData: userData,
+                        userId: userId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              _buildNavBarItem(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => AccountPage(
-                    userData: userData,
-                    userId: userId,
-                  ),
-                ),
-              );
-            },
+                'Mini Class',
+                Icons.self_improvement,
+                false,
+                onTap: () {
+                  // Navigate to mini class page
+                },
+              ),
+              _buildNavBarItem(
+                context,
+                'Yoga Class',
+                Icons.accessibility_new,
+                false,
+                onTap: () {
+                  // Navigate to yoga class page
+                },
+              ),
+              _buildNavBarItem(
+                context,
+                'Account',
+                Icons.person,
+                false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AccountPage(
+                        userData: userData,
+                        userId: userId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
+  // NavBar item yang responsive dan menyesuaikan ukuran layar
   Widget _buildNavBarItem(
     BuildContext context,
     String label,
@@ -248,23 +259,34 @@ class InstructorPage extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: isActive ? const Color(0xFF2C5530) : Colors.black54,
-            size: 24,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: MediaQuery.of(context).size.width * 0.015,
+          vertical: MediaQuery.of(context).size.height * 0.003,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
               color: isActive ? const Color(0xFF2C5530) : Colors.black54,
-              fontSize: 12,
+              size: MediaQuery.of(context).size.width * 0.06, // Responsive icon size
             ),
-          ),
-        ],
+            SizedBox(height: MediaQuery.of(context).size.height * 0.003),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? const Color(0xFF2C5530) : Colors.black54,
+                fontSize: MediaQuery.of(context).size.width * 0.028, // Responsive font size
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }

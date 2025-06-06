@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:front_end/ui/dashboard.dart';
-import 'firebase_options.dart';
+import 'package:front_end/ui/dashboardAdmin.dart'; // Import dashboard admin
 import 'dart:async';
 import 'ui/login.dart';
-import 'ui/session_manager.dart';  // Pastikan sudah ada import SessionManager
+import 'ui/session_manager.dart';
 import 'ui/account.dart';
 
 void main() async {
@@ -24,11 +25,43 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
       initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/dashboard': (context) => const DashboardPage(),
-        '/account': (context) => const AccountPage(),
+      onGenerateRoute: (settings) {
+        // Handle route generation with arguments
+        if (settings.name == '/dashboard') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => DashboardPage(
+              userData: args?['userData'],
+              userId: args?['userId'],
+            ),
+          );
+        } else if (settings.name == '/admin-dashboard') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => DashboardAdminPage(
+              adminData: args?['adminData'] ?? {},
+              adminId: args?['adminId'] ?? '',
+            ),
+          );
+        } else if (settings.name == '/account') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          return MaterialPageRoute(
+            builder: (context) => AccountPage(
+              userData: args?['userData'],
+              userId: args?['userId'],
+            ),
+          );
+        }
+        
+        // Default routes without arguments
+        switch (settings.name) {
+          case '/':
+            return MaterialPageRoute(builder: (context) => const SplashScreen());
+          case '/login':
+            return MaterialPageRoute(builder: (context) => const LoginScreen());
+          default:
+            return MaterialPageRoute(builder: (context) => const SplashScreen());
+        }
       },
     );
   }
@@ -48,22 +81,52 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkLoginStatus();
   }
 
-  // Cek apakah sudah login atau belum
+  // Cek apakah sudah login atau belum (user atau admin)
   Future<void> _checkLoginStatus() async {
-    bool loggedIn = await SessionManager.isLoggedIn();
+    // Cek admin login terlebih dahulu
+    bool adminLoggedIn = await SessionManager.isAdminLoggedIn();
+    
+    if (adminLoggedIn) {
+      // Jika admin sudah login, ambil data admin dan arahkan ke admin dashboard
+      String? adminId = await SessionManager.getAdminId();
+      Map<String, dynamic>? adminData = await SessionManager.getAdminData();
+      
+      print("Admin ID from session: $adminId");
+      print("Admin data from session: $adminData");
 
-    if (loggedIn) {
-      // Jika sudah login, ambil data user dan arahkan ke dashboard
+      // Pastikan adminId dan adminData tidak null sebelum menavigasi
+      if (adminId != null && adminData != null) {
+        // Navigasi ke admin dashboard dengan data admin
+        Navigator.pushReplacementNamed(
+          context,
+          '/admin-dashboard',
+          arguments: {'adminData': adminData, 'adminId': adminId},
+        );
+        return;
+      } else {
+        // Jika tidak ada data admin yang valid, clear session dan lanjut cek user
+        _navigateToLogin();
+      }
+    }
+
+    // Cek user login jika admin tidak login
+    bool userLoggedIn = await SessionManager.isLoggedIn();
+
+    if (userLoggedIn) {
+      // Jika user sudah login, ambil data user dan arahkan ke dashboard
       String? userId = await SessionManager.getUserId();
-      Map<String, dynamic>? userData = await SessionManager.getUserData();  // Ambil username dengan benar
+      Map<String, dynamic>? userData = await SessionManager.getUserData();
+      
+      print("User ID from session: $userId");
+      print("User data from session: $userData");
 
-      // Pastikan userId dan username tidak null sebelum menavigasi
+      // Pastikan userId dan userData tidak null sebelum menavigasi
       if (userId != null && userData != null) {
-        // Navigasi ke halaman loading login dengan data pengguna
+        // Navigasi ke dashboard dengan data pengguna
         Navigator.pushReplacementNamed(
           context,
           '/dashboard',
-          arguments: {'userData': userData, 'userId': userId},  // Mengirimkan data pengguna ke HomePage
+          arguments: {'userData': userData, 'userId': userId},
         );
       } else {
         // Jika tidak ada data yang valid, arahkan ke login
@@ -110,6 +173,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontSize: 14,
                 color: Color(0xFF364822),
               ),
+            ),
+            const SizedBox(height: 30),
+            // Loading indicator
+            const CircularProgressIndicator(
+              color: Color(0xFF364822),
             ),
           ],
         ),
